@@ -4,8 +4,21 @@ import {StyleSheet, Text, View, ScrollView, FlatList} from 'react-native';
 import {Navbar} from './src/Navbar'
 import {AddToDo} from './src/AddToDo'
 import {Todo} from './src/Todo'
+import {ConnectWeb} from './src/ConnectWeb'
+
+var ws = new WebSocket('ws://192.168.1.40:9090/');
+var web_id;
 
 export default function App() {
+
+  const setWebId = title => {
+
+    ws.onopen = () => {
+
+    };
+    web_id = title
+  }
+
   const [todos, setTodos] = useState([])
 
   const addTodo = title => {
@@ -15,13 +28,15 @@ export default function App() {
         title
       }
     ])
-    var ws = new WebSocket('ws://192.168.1.40:9090/');
-    ws.onopen = () => {
-      // connection opened
-      var message = '{"status": "debug","web_id": 27,"client_id": 2,"data": "'+title+'"}'
-      ws.send(message); // send a message
-    };
-
+    // var ws = new WebSocket('ws://192.168.1.40:9090/');
+    // ws.onopen = () => {
+    //   // connection opened
+    //   var message = '{"status": "debug","web_id": 27,"client_id": 2,"data": "'+title+'"}'
+    //   ws.send(message); // send a message
+    // };
+    // var ws = new WebSocket('ws://192.168.1.40:9090/');
+    var message = '{"status": "debug","web_id": '+web_id+',"client_id": 2,"data": "'+title+'"}'
+    ws.send(message); // send a message
     ws.onmessage = (e) => {
       // a message was received
       var data = JSON.parse(e.data)
@@ -50,8 +65,9 @@ export default function App() {
   }
 
   return (<View >
-    <Navbar title="Todo App DT"/>
+    <Navbar title="DT BOX Client"/>
     <View style={styles.container}>
+      <ConnectWeb onSubmit={setWebId}/>
       <AddToDo onSubmit={addTodo}/>
       <FlatList keyExtractor={item => item.id} data={todos} renderItem={({item}) => <Todo todo={item} onRemove={removeTodo}/>}/>
 
