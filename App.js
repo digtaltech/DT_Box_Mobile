@@ -72,10 +72,17 @@ export default function App() {
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    var scanDataJson = JSON.parse(data)
-    alert(`Web ID ${scanDataJson.web_id} `);
-    setWebId(scanDataJson.web_id)
-    console.log("Scan QR")
+    try {
+      var scanDataJson = JSON.parse(data)
+      alert(`Web ID ${scanDataJson.web_id} `);
+      setWebId(scanDataJson.web_id)
+      console.log("Scan QR")
+    }
+    catch {
+      console.log("Not valid QR");
+    }
+
+
     // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
 
