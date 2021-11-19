@@ -21,7 +21,7 @@ function MainContainer() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        initialRouteName={homeName}
+        initialRouteName={scanName}
         screenOptions={({ route }) => ({
           "tabBarActiveTintColor" : "#2C7BE5",
           "tabBarInactiveTintColor" : "#12263F",

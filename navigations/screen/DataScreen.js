@@ -17,21 +17,23 @@ var ws = new WebSocket('ws://192.168.1.40:9090/');
 
 var web_id;
 var client_id
+var status_mobile_connection = 1
 
 export default function InfoScreen({route}) {
 
   const setWebId = title => {
 
-    ws.onopen = () => {};
     web_id = title
+    ws.onopen = () => {
+      console.log("New connection to web")
+    };
   }
-  console.log(route)
+  // console.log(route)
   if (route.params == undefined) {
-    console.log("huy")
+    console.log("no scan")
   } else if (web_id != route.params.web_id) {
-    console.log("pizda")
-    console.log(web_id)
-    console.log(route.params.web_id)
+    console.log("Scanned")
+    console.log("Recive web_id = " + route.params.web_id)
     ws = new WebSocket('ws://192.168.1.40:9090/');
     setWebId(route.params.web_id)
   } else {
@@ -40,26 +42,42 @@ export default function InfoScreen({route}) {
 
   ws.onmessage = (e) => {
     // a message was received
+
     var data = JSON.parse(e.data)
-    console.log("Your ID = " + data.web_id);
     client_id = data.web_id
-    console.log("Message: " + data.data);
-    console.log("HUY");
-    addTodo(data.data)
+    console.log("Mobile ID = " + data.web_id);
+    console.log("Message received [JSON]: " + e.data);
+    console.log("Message received [DATA]: " + data.data);
+    // console.log("HUY");
+    addTodoRecived(data.data, 1)
+    if (status_mobile_connection == 1) {
+      var message_start = '{"status": "debug","web_id": ' + web_id + ',"client_id": ' + client_id + ',"data": "Mobile connect"}'
+      ws.send(message_start); // send a message
+      console.log("Send Data to web", message_start)
+    }
+    status_mobile_connection = 0
   };
 
   const [todos, setTodos] = useState([])
 
-  const addTodo = title => {
+  const addTodoRecived = (title, status) => {
     setTodos(prev => [
       ...prev, {
         id: Date.now().toString(),
         title
       }
     ])
-
+  }
+  const addTodo = (title, status) => {
+    setTodos(prev => [
+      ...prev, {
+        id: Date.now().toString(),
+        title
+      }
+    ])
     var message = '{"status": "debug","web_id": ' + web_id + ',"client_id": ' + client_id + ',"data": "' + title + '"}'
     ws.send(message); // send a message
+    console.log(status)
 
     ws.onerror = (e) => {
       // an error occurred
@@ -82,14 +100,12 @@ export default function InfoScreen({route}) {
     console.log(title)
   }
 
-  return (
-    <View style={styles.container}>
-      <AddToDo onSubmit={addTodo}/>
-      <FlatList keyExtractor={item => item.id} data={todos} renderItem={({item}) => <Todo todo={item} onRemove={removeTodo} onCopy={copyTodo}/>}/>
+  return (<View style={styles.container}>
+    <AddToDo onSubmit={addTodo}/>
+    <FlatList keyExtractor={item => item.id} data={todos} renderItem={({item}) => <Todo todo={item} onRemove={removeTodo} onCopy={copyTodo}/>}/>
 
-      <StatusBar style="auto"/>
-    </View>
-);
+    <StatusBar style="auto"/>
+  </View>);
 }
 const styles = StyleSheet.create({
   container: {
